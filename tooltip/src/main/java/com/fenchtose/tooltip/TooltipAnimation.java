@@ -1,6 +1,11 @@
 package com.fenchtose.tooltip;
 
-import android.support.annotation.IntDef;
+import android.animation.Animator;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,7 +26,7 @@ public class TooltipAnimation {
 
     /**
      * Types of Animations available:
-     * <br/>
+     * <br>
      * <ul>
      *     <li>{@link #NONE} : No Animation</li>
      *     <li>{@link #FADE} : Fade in and Fade Out</li>
@@ -41,6 +46,7 @@ public class TooltipAnimation {
 
     private static final int DEFAULT_DURATION = 400; // ms
     private int duration;
+    private boolean hideContentWhenAnimating;
 
     /**
      * Create a new Animation object for {@link Tooltip}
@@ -48,9 +54,21 @@ public class TooltipAnimation {
      * @param type {@link Type}
      * @param duration animation duration in milliseconds
      */
-    public TooltipAnimation(@Type int type, int duration) {
+    public TooltipAnimation(int type, int duration) {
+        this(type, duration, false);
+    }
+
+    /**
+     * Create a new Animation object for {@link Tooltip}
+     *
+     * @param type {@link Type}
+     * @param duration animation duration in milliseconds
+     * @param hideContentWhenAnimating hide content when animating
+     */
+    public TooltipAnimation(@Type int type, int duration, boolean hideContentWhenAnimating) {
         this.type = type;
         this.duration = duration;
+        this.hideContentWhenAnimating = hideContentWhenAnimating;
     }
 
     /**
@@ -63,9 +81,9 @@ public class TooltipAnimation {
 
     /**
      * Create a new Animation object for {@link Tooltip}
-     * <br/>
+     * <br>
      * type {@link #DEFAULT_TYPE}
-     * <br/>
+     * <br>
      * duration {@link #DEFAULT_DURATION}
      */
     public TooltipAnimation() {
@@ -79,5 +97,52 @@ public class TooltipAnimation {
 
     public int getDuration() {
         return duration;
+    }
+
+    void hideContentWhenAnimatingIn(@NonNull final Animator animator, @NonNull final View contentView) {
+        if (hideContentWhenAnimating && contentView instanceof ViewGroup) {
+            hideAllChildren((ViewGroup) contentView);
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    showAllChildren((ViewGroup) contentView);
+                    animator.removeListener(this);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    showAllChildren((ViewGroup) contentView);
+                    animator.removeListener(this);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+        }
+    }
+
+    void hideContentWhenAnimatingOut(@NonNull final View contentView) {
+        if (hideContentWhenAnimating && contentView instanceof ViewGroup) {
+            hideAllChildren((ViewGroup)contentView);
+        }
+    }
+
+    private static void hideAllChildren(@NonNull ViewGroup view) {
+        for (int i=0; i<view.getChildCount(); i++) {
+            view.getChildAt(i).setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private static void showAllChildren(@NonNull ViewGroup view) {
+        for (int i=0; i<view.getChildCount(); i++) {
+            view.getChildAt(i).setVisibility(View.VISIBLE);
+        }
     }
 }

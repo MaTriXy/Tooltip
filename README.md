@@ -1,8 +1,5 @@
 ## Tooltip
 
-<a href="http://www.methodscount.com/?lib=com.fenchtose%3Atooltip%3A0.1.5"><img src="https://img.shields.io/badge/Methods count-core: 151 | deps: 20-e91e63.svg"/></a>
-<a href="http://www.methodscount.com/?lib=com.fenchtose%3Atooltip%3A0.1.5"><img src="https://img.shields.io/badge/Size-19 KB-e91e63.svg"/></a>
-
 This is a lightweight library to show Tooltips dynamically in your app. This tooltip does
 not require any custom layout. It works out of the box with all the layouts.
 
@@ -27,7 +24,9 @@ That's it. It's that simple. You can customize the size and color of the tip to 
 
 ## How To Install
 
-### Maven
+### JCenter / Bintray (Deprecated)
+
+##### Maven
 
     repositories {
         maven {
@@ -35,16 +34,28 @@ That's it. It's that simple. You can customize the size and color of the tip to 
         }
     }
 
-### JCenter
+##### JCenter
 
     repositories {
         jcenter()
     }
 
-### Dependency
+##### Dependency
 
     dependencies {
-        compile 'com.fenchtose:tooltip:0.1.5'
+        implementation 'com.fenchtose:tooltip:0.1.6'
+    }
+
+### JitPack
+
+    repositories {
+        maven {
+            url  "https://jitpack.io"
+        }
+    }
+    
+    dependencies {
+        implementation 'com.github.jayrambhia:Tooltip:0.1.7-1'
     }
 
 ### Useful Methods:
@@ -78,6 +89,7 @@ TooltipAnimation just holds type of the animation to be performed and duration o
  
  - `type` - Type of animation - `FADE`, `SCALE`, `REVEAL`, `SCALE_AND_FADE`
  - `duration` - Animation duration in milliseconds
+ - `hideContentWhileAnimating` - Content of the tooltip will be hidden when it's animating in or out. This will not work if the content is a View and not a ViewGroup.
  
  Animations are a bit tricky in this library. `FADE` and `REVEAL` are applied on the container of the tooltip
  with appropriate parameters. So if the container has some background color, it looks really weird. The same

@@ -10,15 +10,16 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -516,9 +517,10 @@ public class Tooltip extends ViewGroup {
             Log.d(TAG, "size: " + size[0] + ", " + size[1]);
         }
 
-        Animator animator = getAnimator(animation, point, size, true);
+        final Animator animator = getAnimator(animation, point, size, true);
         if (animator != null) {
             animator.start();
+            animation.hideContentWhenAnimatingIn(animator, contentView);
         }
 
     }
@@ -609,6 +611,7 @@ public class Tooltip extends ViewGroup {
 
         animator.start();
         isDismissAnimationInProgress = true;
+        animation.hideContentWhenAnimatingOut(contentView);
 
         animator.addListener(new Animator.AnimatorListener() {
             @Override
@@ -650,7 +653,6 @@ public class Tooltip extends ViewGroup {
                 return null;
         }
     }
-
 
     /**
      * Builder class for {@link Tooltip}. Builder has the responsibility of creating the Tooltip
@@ -834,6 +836,8 @@ public class Tooltip extends ViewGroup {
 
         /**
          * Margin from the anchor and screen boundaries
+         * @param padding - margin from the screen edge (in pixels).
+         * @return Builder
          */
         public Builder withPadding(int padding) {
             this.padding = padding;
@@ -862,7 +866,7 @@ public class Tooltip extends ViewGroup {
 
         /**
          * If you want the tooltip to dismiss automatically after a certain amount of time,
-         * set it in milliseconds. Values <= 0 are considered invalid and auto dismiss is turned off.
+         * set it in milliseconds. Values &lt;= 0 are considered invalid and auto dismiss is turned off.
          *
          * Default is 0.
          *
@@ -890,6 +894,9 @@ public class Tooltip extends ViewGroup {
          * If the anchor is anchored to some view in CoordinatorLayout, we get incorrect data
          * about its position in the window. So we need to wait for a preDraw event and then
          * draw tooltip.
+         *
+         * @param check - boolean
+         * @return Builder
          */
         public Builder checkForPreDraw(boolean check) {
             this.checkForPreDraw = check;
@@ -930,7 +937,7 @@ public class Tooltip extends ViewGroup {
 
         /**
          * Creates a new instance of Tooltip by calling {@link #build()} and adds tooltip to {@link #rootView}.
-         * <br/><br/>
+         * <br><br>
          * Tooltip is added to the rootView with MATCH_PARENT for width and height constraints. {@link #contentView}
          * is drawn based on its LayoutParams. If it does not contain any LayoutParams, new LayoutParams are generated
          * with WRAP_CONTENT for width and height and added to the Tooltip view.
@@ -942,12 +949,16 @@ public class Tooltip extends ViewGroup {
 
             int[] anchorLocation = new int[2];
             anchorView.getLocationInWindow(anchorLocation);
-            Log.i(TAG, "anchor location before adding: " + anchorLocation[0] + ", " + anchorLocation[1]);
+            if (debug) {
+                Log.d(TAG, "anchor location before adding: " + anchorLocation[0] + ", " + anchorLocation[1]);
+            }
 
             rootView.addView(tooltip, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
             anchorView.getLocationInWindow(anchorLocation);
-            Log.i(TAG, "anchor location after adding: " + anchorLocation[0] + ", " + anchorLocation[1]);
+            if (debug) {
+                Log.i(TAG, "anchor location after adding: " + anchorLocation[0] + ", " + anchorLocation[1]);
+            }
 
             if (autoCancelTime > NO_AUTO_CANCEL) {
                 handler.postDelayed(autoCancelRunnable, autoCancelTime);
@@ -974,7 +985,7 @@ public class Tooltip extends ViewGroup {
     /**
      * Tip of the tooltip. Tip is drawn separately to accommodate custom views.
      * It has three properties. {@link #width}, {@link #height}, and {@link #color}.
-     * <br/><br/>
+     * <br><br>
      * Tip is drawn as an isosceles triangle. The length of the base
      * is defined by width and perpendicular length between top vertex and base is defined
      * by height.
